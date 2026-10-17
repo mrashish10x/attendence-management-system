@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String
+  status       String   @default("active")
+  phone        String?
+  avatarColor  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  student      Student?
+  teacher      Teacher?
+
+  notifications Notification[]
+  activities    Activity[]
+}
+
+model Student {
+  id           String      @id @default(cuid())
+  userId       String      @unique
+  rollNo       String
+  guardianName String?
+  joinedOn     DateTime    @default(now())
+  classId      String
+
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schoolClass  SchoolClass @relation(fields: [classId], references: [id])
+  attendance   Attendance[]
+
+  @@unique([classId, rollNo])
+}
+
+model Teacher {
+  id              String       @id @default(cuid())
+  userId          String       @unique
+  joinedOn        DateTime     @default(now())
+  assignedClassId String?
+
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignedClass    SchoolClass?  @relation("AssignedTeacher", fields: [assignedClassId], references: [id])
+  subjects         Subject[]
+  classTeacherFor  SchoolClass[] @relation("ClassTeacher")
+  attendance       Attendance[]
+}
+
+model SchoolClass {
+  id              String    @id @default(cuid())
+  name            String
+  section         String
+  students        Student[]
+
+  classTeacherId  String?
+  classTeacher    Teacher?  @relation("ClassTeacher", fields: [classTeacherId], references: [id])
+  assignedTeachers Teacher[] @relation("AssignedTeacher")
+
+  subjects        Subject[]
+
+  @@unique([name, section])
+}
+
+model Subject {
+  id           String       @id @default(cuid())
+  name         String
+  code         String       @unique
+  teacherId    String?
+  classId      String?
+
+  teacher      Teacher?     @relation(fields: [teacherId], references: [id])
+  schoolClass  SchoolClass? @relation(fields: [classId], references: [id])
+  attendance   Attendance[]
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  date      DateTime
+  status    String
+
+  studentId String
+  subjectId String
+  teacherId String?
+
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  teacher   Teacher? @relation(fields: [teacherId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([studentId, subjectId, date])
+  @@index([date])
+  @@index([studentId])
+  @@index([subjectId])
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String
+  type        String   @default("info")
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  actorId   String
+  action    String
+  target    String
+  createdAt DateTime @default(now())
+
+  actor User @relation(fields: [actorId], references: [id], onDelete: Cascade)
+}

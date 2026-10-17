@@ -1,0 +1,14 @@
+node_modules
+.next
+out
+.env*
+*.log
+.DS_Store
+node_modules/
+.next/
+.env
+.env.*
+!.env.example
+*.db
+*.db-journal
+tsconfig.tsbuildinfo
