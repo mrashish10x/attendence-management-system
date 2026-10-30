@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import {
@@ -57,6 +57,7 @@ export default function TeachersPage() {
     name: "",
     email: "",
     phone: "",
+    password: "",
   });
 
   async function loadTeachers() {
@@ -120,6 +121,7 @@ export default function TeachersPage() {
       name: "",
       email: "",
       phone: "",
+      password: "",
     });
 
     setActive(null);
@@ -131,6 +133,7 @@ export default function TeachersPage() {
       name: teacher.user.name,
       email: teacher.user.email,
       phone: teacher.user.phone || "",
+      password: "",
     });
 
     setActive(teacher);
@@ -165,6 +168,11 @@ export default function TeachersPage() {
       return;
     }
 
+    if (mode === "add" && form.password.length < 8) {
+      showToast("Password must be at least 8 characters.", "error");
+      return;
+    }
+
     try {
       if (mode === "add") {
         const response = await fetch("/api/teachers", {
@@ -176,6 +184,7 @@ export default function TeachersPage() {
             name: form.name.trim(),
             email: form.email.trim(),
             phone: form.phone.trim() || null,
+            password: form.password,
           }),
         });
 
@@ -204,6 +213,7 @@ export default function TeachersPage() {
             name: form.name.trim(),
             email: form.email.trim(),
             phone: form.phone.trim() || null,
+            password: form.password,
           }),
         });
 
@@ -322,7 +332,7 @@ export default function TeachersPage() {
       header: "Assigned Class",
       accessor: (teacher) =>
         teacher.assignedClass
-          ? `${teacher.assignedClass.name} · Sec ${teacher.assignedClass.section}`
+          ? `${teacher.assignedClass.name} Â· Sec ${teacher.assignedClass.section}`
           : "Not assigned",
     },
 
@@ -483,6 +493,19 @@ export default function TeachersPage() {
             }
           />
 
+          {mode === "add" && (
+            <TextField
+              label="Password"
+              type="password"
+              required
+              value={form.password}
+              placeholder="Minimum 8 characters"
+              onChange={(e) =>
+                setForm({ ...form, password: e.target.value })
+              }
+            />
+          )}
+
           <div className="flex justify-end gap-2.5 pt-2">
             <Button
               type="button"
@@ -567,7 +590,7 @@ export default function TeachersPage() {
                 </p>
                 <p className="mt-0.5 font-medium text-ink">
                   {active.assignedClass
-                    ? `${active.assignedClass.name} · Sec ${active.assignedClass.section}`
+                    ? `${active.assignedClass.name} Â· Sec ${active.assignedClass.section}`
                     : "Not assigned"}
                 </p>
               </div>
@@ -647,3 +670,4 @@ export default function TeachersPage() {
     </div>
   );
 }
+

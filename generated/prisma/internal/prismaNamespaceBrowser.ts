@@ -51,6 +51,7 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
+  School: 'School',
   User: 'User',
   Student: 'Student',
   Teacher: 'Teacher',
@@ -58,7 +59,9 @@ export const ModelName = {
   Subject: 'Subject',
   Attendance: 'Attendance',
   Notification: 'Notification',
-  Activity: 'Activity'
+  Activity: 'Activity',
+  EmailVerification: 'EmailVerification',
+  AccountEmailOtp: 'AccountEmailOtp'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -74,17 +77,31 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
+export const SchoolScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SchoolScalarFieldEnum = (typeof SchoolScalarFieldEnum)[keyof typeof SchoolScalarFieldEnum]
+
+
 export const UserScalarFieldEnum = {
   id: 'id',
   name: 'name',
   email: 'email',
   passwordHash: 'passwordHash',
+  emailVerifiedAt: 'emailVerifiedAt',
   role: 'role',
   status: 'status',
   phone: 'phone',
   avatarColor: 'avatarColor',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  schoolId: 'schoolId'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -116,7 +133,8 @@ export const SchoolClassScalarFieldEnum = {
   id: 'id',
   name: 'name',
   section: 'section',
-  classTeacherId: 'classTeacherId'
+  classTeacherId: 'classTeacherId',
+  schoolId: 'schoolId'
 } as const
 
 export type SchoolClassScalarFieldEnum = (typeof SchoolClassScalarFieldEnum)[keyof typeof SchoolClassScalarFieldEnum]
@@ -127,7 +145,8 @@ export const SubjectScalarFieldEnum = {
   name: 'name',
   code: 'code',
   teacherId: 'teacherId',
-  classId: 'classId'
+  classId: 'classId',
+  schoolId: 'schoolId'
 } as const
 
 export type SubjectScalarFieldEnum = (typeof SubjectScalarFieldEnum)[keyof typeof SubjectScalarFieldEnum]
@@ -168,6 +187,35 @@ export const ActivityScalarFieldEnum = {
 } as const
 
 export type ActivityScalarFieldEnum = (typeof ActivityScalarFieldEnum)[keyof typeof ActivityScalarFieldEnum]
+
+
+export const EmailVerificationScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  otpHash: 'otpHash',
+  passwordHash: 'passwordHash',
+  schoolName: 'schoolName',
+  adminName: 'adminName',
+  phone: 'phone',
+  expiresAt: 'expiresAt',
+  attempts: 'attempts',
+  createdAt: 'createdAt'
+} as const
+
+export type EmailVerificationScalarFieldEnum = (typeof EmailVerificationScalarFieldEnum)[keyof typeof EmailVerificationScalarFieldEnum]
+
+
+export const AccountEmailOtpScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  otpHash: 'otpHash',
+  purpose: 'purpose',
+  expiresAt: 'expiresAt',
+  attempts: 'attempts',
+  createdAt: 'createdAt'
+} as const
+
+export type AccountEmailOtpScalarFieldEnum = (typeof AccountEmailOtpScalarFieldEnum)[keyof typeof AccountEmailOtpScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -1,14 +1,13 @@
 ﻿import { requireRole } from "@/lib/auth-guard";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { ADMIN_NAV } from "@/lib/nav";
-import { CURRENT_ADMIN } from "@/data/mock";
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  await requireRole(["ADMIN"]);
+  const session = await requireRole(["ADMIN"]);
 
   return (
     <DashboardShell
@@ -16,9 +15,9 @@ export default async function AdminLayout({
       roleLabel="Admin Panel"
       pageTitle="Admin Panel"
       user={{
-        name: CURRENT_ADMIN.name,
+        name: session.user.name || session.user.email || "Admin",
         role: "Admin",
-        avatarColor: CURRENT_ADMIN.avatarColor,
+        avatarColor: "#4f46e5",
       }}
       profileHref="/admin/settings"
     >

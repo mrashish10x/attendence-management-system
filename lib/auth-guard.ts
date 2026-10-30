@@ -1,11 +1,9 @@
-import { auth } from "@/auth";
+﻿import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
-export type AppRole = "ADMIN" | "TEACHER" | "STUDENT";
+export type AppRole = "OWNER" | "ADMIN" | "TEACHER" | "STUDENT";
 
-export async function requireRole(
-  allowedRoles: AppRole[]
-) {
+export async function requireRole(allowedRoles: AppRole[]) {
   const session = await auth();
 
   if (!session?.user?.id || !session.user.role) {
@@ -15,7 +13,11 @@ export async function requireRole(
   const role = session.user.role.toUpperCase() as AppRole;
 
   if (!allowedRoles.includes(role)) {
-    redirect("/unauthorized");
+    if (role === "OWNER") redirect("/owner/admins");
+    if (role === "ADMIN") redirect("/admin/dashboard");
+    if (role === "TEACHER") redirect("/teacher");
+    if (role === "STUDENT") redirect("/student");
+    redirect("/login");
   }
 
   return session;

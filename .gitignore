@@ -12,3 +12,25 @@ node_modules/
 *.db
 *.db-journal
 tsconfig.tsbuildinfo
+# Local backups and temporary files
+backups/
+*.backup
+*.backup.*
+presently-current-code.txt
+ently-current-code.txt
+check-data.cjs
+check-db.cjs
+check-user.cjs
+verify-original-db.cjs
+verify-prisma-test.cjs
+verify-school-migration.cjs
+run-school-migration-test.cjs
+migration-final-review.sql
+school-migration-review.sql
+school-migration-test.sql
+prisma/schema-before-*.prisma
+prisma/prisma/
+c --noEmitnpx tsc --noEmit
+ql
+
+*.local-backup

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -52,7 +52,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { showToast } = useToast();
 
-  const [role, setRole] = useState<Role>("student");
+  const [role, setRole] = useState<Role>("admin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
@@ -108,7 +108,7 @@ export default function LoginPage() {
       const config = ROLES.find((item) => item.id === role);
 
       showToast(
-        `Welcome back — signed in as ${config?.label || role}`,
+        `Welcome back â€” signed in as ${config?.label || role}`,
         "success"
       );
 
@@ -372,3 +372,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

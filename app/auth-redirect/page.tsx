@@ -1,26 +1,17 @@
-import { auth } from "@/auth";
+﻿import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
 export default async function AuthRedirectPage() {
   const session = await auth();
 
-  if (!session?.user?.id || !session.user.role) {
-    redirect("/login");
-  }
+  if (!session?.user?.id) redirect("/login");
 
-  const role = session.user.role.toUpperCase();
+  const routes: Record<string, string> = {
+    OWNER: "/owner/admins",
+    ADMIN: "/admin/dashboard",
+    TEACHER: "/teacher",
+    STUDENT: "/student",
+  };
 
-  if (role === "ADMIN") {
-    redirect("/admin");
-  }
-
-  if (role === "TEACHER") {
-    redirect("/teacher");
-  }
-
-  if (role === "STUDENT") {
-    redirect("/student");
-  }
-
-  redirect("/login");
+  redirect(routes[session.user.role.toUpperCase()] || "/login");
 }

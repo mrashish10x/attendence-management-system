@@ -18,6 +18,11 @@ export { Prisma }
 export * as $Enums from './enums'
 export * from './enums';
 /**
+ * Model School
+ * 
+ */
+export type School = Prisma.SchoolModel
+/**
  * Model User
  * 
  */
@@ -57,3 +62,13 @@ export type Notification = Prisma.NotificationModel
  * 
  */
 export type Activity = Prisma.ActivityModel
+/**
+ * Model EmailVerification
+ * 
+ */
+export type EmailVerification = Prisma.EmailVerificationModel
+/**
+ * Model AccountEmailOtp
+ * 
+ */
+export type AccountEmailOtp = Prisma.AccountEmailOtpModel

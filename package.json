@@ -10,7 +10,9 @@
     "postinstall": "prisma skills sync || exit 0"
   },
   "dependencies": {
+    "@libsql/client": "^0.18.0",
     "@prisma/adapter-better-sqlite3": "^7.10.0",
+    "@prisma/adapter-libsql": "^7.10.1",
     "@prisma/client": "^7.10.0",
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^13.0.3",
@@ -24,6 +26,7 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "recharts": "^3.10.1",
+    "resend": "^6.35.0",
     "tailwind-merge": "^3.7.0"
   },
   "devDependencies": {

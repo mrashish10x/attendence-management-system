@@ -1,4 +1,4 @@
-export type NavIconName =
+﻿export type NavIconName =
   | "LayoutDashboard"
   | "Users"
   | "GraduationCap"
@@ -33,6 +33,8 @@ export const ADMIN_NAV: NavItem[] = [
 export const TEACHER_NAV: NavItem[] = [
   { label: "Dashboard", href: "/teacher", icon: "LayoutDashboard" },
   { label: "My Classes", href: "/teacher/classes", icon: "Layers" },
+  { label: "Add Class", href: "/teacher/add-class", icon: "Layers" },
+  { label: "Add Student", href: "/teacher/add-student", icon: "GraduationCap" },
   { label: "My Subjects", href: "/teacher/subjects", icon: "BookOpen" },
   { label: "Mark Attendance", href: "/teacher/mark-attendance", icon: "ClipboardCheck" },
   { label: "Attendance History", href: "/teacher/attendance-history", icon: "History" },

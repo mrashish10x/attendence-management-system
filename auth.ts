@@ -1,15 +1,11 @@
-import NextAuth from "next-auth";
+﻿import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
-function normalizeEmail(value: string): string {
-  return value
-    .normalize("NFKC")
-    .replace(/[\u200B-\u200D\uFEFF]/g, "")
-    .trim()
-    .toLowerCase();
+function normalizeEmail(value: string) {
+  return value.normalize("NFKC").replace(/[\u200B-\u200D\uFEFF]/g, "").trim().toLowerCase();
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -18,189 +14,99 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
     }),
-
     Credentials({
       id: "credentials",
       name: "Email and Password",
       credentials: {
-        email: {
-          label: "Email",
-          type: "email",
-        },
-        password: {
-          label: "Password",
-          type: "password",
-        },
-        role: {
-          label: "Role",
-          type: "text",
-        },
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+        role: { label: "Role", type: "text" },
       },
-
       async authorize(credentials) {
-        const email = normalizeEmail(
-          String(credentials?.email ?? "")
-        );
-
+        const email = normalizeEmail(String(credentials?.email ?? ""));
         const password = String(credentials?.password ?? "");
-        const role = String(credentials?.role ?? "")
-          .trim()
-          .toUpperCase();
+        const requestedRole = String(credentials?.role ?? "").trim().toUpperCase();
 
-        if (!email || !password || !role) {
-          return null;
-        }
-
-        if (!["ADMIN", "TEACHER", "STUDENT"].includes(role)) {
-          return null;
-        }
+        if (!email || !password) return null;
 
         try {
-          const user = await prisma.user.findUnique({
-            where: { email },
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              passwordHash: true,
-              role: true,
-              status: true,
-            },
-          });
+          const user = await prisma.user.findUnique({ where: { email } });
 
-          if (!user || user.status !== "active") {
-            return null;
-          }
+          if (!user || user.status !== "active") return null;
 
-          if (user.role.trim().toUpperCase() !== role) {
-            return null;
-          }
+          const validRoles = ["OWNER", "ADMIN", "TEACHER", "STUDENT"];
+          if (!validRoles.includes(user.role.toUpperCase())) return null;
 
-          // Support bcrypt hashes for newly created accounts.
-          // Legacy plaintext passwords are temporarily supported
-          // for existing local-development accounts.
-          const storedPassword = user.passwordHash;
-          let passwordValid = false;
-
+          // OWNER is allowed through the existing Admin login selection.
           if (
-            storedPassword.startsWith("$2a$") ||
-            storedPassword.startsWith("$2b$") ||
-            storedPassword.startsWith("$2y$")
-          ) {
-            passwordValid = await bcrypt.compare(
-              password,
-              storedPassword
-            );
-          } else {
-            passwordValid = storedPassword === password;
-          }
+            requestedRole &&
+            requestedRole !== user.role.toUpperCase() &&
+            !(requestedRole === "ADMIN" && user.role.toUpperCase() === "OWNER")
+          ) return null;
 
-          if (!passwordValid) {
-            return null;
-          }
+          const hash = user.passwordHash;
+          const passwordValid =
+            hash.startsWith("$2a$") || hash.startsWith("$2b$") || hash.startsWith("$2y$")
+              ? await bcrypt.compare(password, hash)
+              : hash === password;
+
+          if (!passwordValid) return null;
 
           return {
             id: user.id,
             name: user.name,
             email: user.email,
             role: user.role,
+            schoolId: user.schoolId,
           };
         } catch (error) {
-          console.error("CREDENTIALS AUTHENTICATION ERROR:", error);
+          console.error("AUTH ERROR:", error);
           return null;
         }
       },
     }),
   ],
-
-  session: {
-    strategy: "jwt",
-  },
-
-  pages: {
-    signIn: "/login",
-  },
-
+  session: { strategy: "jwt" },
+  pages: { signIn: "/login" },
   callbacks: {
     async signIn({ account, profile, user }) {
-      // Credentials accounts have already been validated by authorize().
-      if (account?.provider === "credentials") {
-        return Boolean(user?.id && user?.role);
-      }
-
-      if (account?.provider !== "google") {
-        return false;
-      }
+      if (account?.provider === "credentials") return Boolean(user?.id && user?.role);
+      if (account?.provider !== "google") return false;
 
       const email = profile?.email?.trim().toLowerCase();
+      if (!email || profile?.email_verified !== true) return false;
 
-      if (!email || profile?.email_verified !== true) {
-        return false;
-      }
-
-      try {
-        const existingUser = await prisma.user.findFirst({
-          where: {
-            email,
-            status: "active",
-          },
-          select: {
-            id: true,
-            role: true,
-          },
-        });
-
-        return Boolean(existingUser);
-      } catch (error) {
-        console.error("GOOGLE SIGN-IN DATABASE ERROR:", error);
-        return false;
-      }
+      const existing = await prisma.user.findFirst({
+        where: { email: normalizeEmail(email), status: "active" },
+        select: { id: true },
+      });
+      return Boolean(existing);
     },
-
     async jwt({ token, account, user }) {
       if (account?.provider === "credentials" && user) {
+        const u = user as typeof user & { role?: string; schoolId?: string | null };
         token.userId = user.id;
-        token.role = (user as { role?: string }).role;
+        token.role = u.role;
+        token.schoolId = u.schoolId ?? null;
       }
 
       if (account?.provider === "google" && token.email) {
-        const email = normalizeEmail(token.email);
-
-        try {
-          const existingUser = await prisma.user.findFirst({
-            where: {
-              email,
-              status: "active",
-            },
-            select: {
-              id: true,
-              role: true,
-            },
-          });
-
-          if (existingUser) {
-            token.userId = existingUser.id;
-            token.role = existingUser.role;
-          } else {
-            token.userId = undefined;
-            token.role = undefined;
-          }
-        } catch (error) {
-          console.error("GOOGLE JWT DATABASE ERROR:", error);
-          token.userId = undefined;
-          token.role = undefined;
-        }
+        const existing = await prisma.user.findFirst({
+          where: { email: normalizeEmail(token.email), status: "active" },
+          select: { id: true, role: true, schoolId: true },
+        });
+        token.userId = existing?.id;
+        token.role = existing?.role;
+        token.schoolId = existing?.schoolId ?? null;
       }
-
       return token;
     },
-
     async session({ session, token }) {
       if (session.user && token.userId && token.role) {
         session.user.id = token.userId;
-        session.user.role = token.role;
+        session.user.role = String(token.role);
+        session.user.schoolId = typeof token.schoolId === "string" ? token.schoolId : null;
       }
-
       return session;
     },
   },
